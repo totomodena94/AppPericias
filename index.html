@@ -13,6 +13,109 @@
         <section class="formulario-carga">
             
             <form>
+                <div class="campo">
+                    <label for="targa">Targa</label>
+                    <input type="text" name="targa" id="targa" required pattern="[A-Z]{2}[0-9]{3}[A-Z]{2}" placeholder="AA123BB">
+                </div>
+                <div class="campo">
+                    <label for="brand">Marca</label>
+                    <select name="brand" id="brand" required>
+                        <option value="">Seleziona marca</option>
+                        <option value="abarth">Abarth</option>
+                        <option value="alfa-romeo">Alfa Romeo</option>
+                        <option value="audi">Audi</option>
+                        <option value="bmw">Bmw</option>
+                        <option value="citroen">Citroen</option>
+                        <option value="cupra">Cupra</option>
+                        <option value="dacia">Dacia</option>
+                        <option value="ds-automobiles">DS Automobiles</option>
+                        <option value="fiat">Fiat</option>
+                        <option value="ford">Ford</option>
+                        <option value="honda">Honda</option>
+                        <option value="hyundai">Hyundai</option>
+                        <option value="jaguar">Jaguar</option>
+                        <option value="jeep">Jeep</option>
+                        <option value="kia">Kia</option>
+                        <option value="land-rover">Land Rover</option>
+                        <option value="lancia">Lancia</option>
+                        <option value="lexus">Lexus</option>
+                        <option value="mazda">Mazda</option>
+                        <option value="mercedes-benz">Mercedes benz</option>
+                        <option value="mini">MINI</option>
+                        <option value="mitsubishi">Mitsubishi</option>
+                        <option value="nissan">Nissan</option>
+                        <option value="opel">Opel</option>
+                        <option value="peugeot">Peugeot</option>
+                        <option value="porsche">Porsche</option>
+                        <option value="renault">Renault</option>
+                        <option value="seat">Seat</option>
+                        <option value="skoda">Skoda</option>
+                        <option value="smart">Smart</option>
+                        <option value="ssamgyong">SsangYong</option>
+                        <option value="subaru">Subaru</option>
+                        <option value="suzuki">Suzuki</option>
+                        <option value="tesla">Tesla</option>
+                        <option value="toyota">Toyota</option>
+                        <option value="volkswagen">Volskwagen</option>
+                        <option value="volvo">Volvo</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="concesionaria">Seleziona sede</label>
+                    <select name="concesionaria" id="concesionaria" required>
+                        <option value="">Seleziona sede</option>
+                        <option value="appia-nuovo">Appia - Nuovo</option>
+                        <option value="appia-usato">Appia - Usato</option>
+                        <option value="salaria-nuovo">Salaria - Nuovo</option>
+                        <option value="salaria-usato">Salaria - Usato</option>
+                        <option value="barberini">Barberini</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="vendedor">Venditore</label>
+                    <select name="vendedor" id="vendedor" required>
+                        <option value="">Prima seleziona una sede</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <fieldset>
+                    <legend>Tipo di perizia</legend>
+  
+                    <div>
+                        <input type="radio" name="tipo" id="tipo-perizia" value="perizia" required>
+                        <label for="tipo-perizia">Perizia</label>
+                    </div>
+
+                    <div>
+                        <input type="radio" name="tipo" id="tipo-controperizia" value="controperizia">
+                        <label for="tipo-controperizia">Controperizia</label>
+                    </div>
+
+                    <div>
+                        <input type="radio" name="tipo" id="tipo-demo" value="demo">
+                        <label for="tipo-demo">Demo</label>
+                    </div>
+                    </fieldset>
+
+                </div>
+                <div class="campo">
+
+                    <label for="fecha">Data</label>
+                    <input type="date" name="fecha" id="fecha" required>
+                </div>
+                <div class="campo">
+                    <label for="notas">Note/osservazioni</label>
+                    <textarea name="notas" id="notas"></textarea>
+                </div>
+
+                <div class="acciones-form">
+                    <button type="submit">Salva</button>
+                    <button type="reset">Pulisci</button>
+
+                
+                    
+                </div>
                 
 
             </form>
