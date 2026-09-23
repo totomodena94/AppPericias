@@ -1,0 +1,58 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+:root {
+  --color-primario: #bbbffb;
+  --color-secundario: #324057;
+  --color-fondo: #dfdfec;
+  --font-base: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+body {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem; 
+  min-height: 100vh;
+  box-sizing: border-box; /* para que el padding no sume ancho extra y rompa el 100vh/100% */
+  font-family: var(--font-base);
+}
+
+.header{
+    background-color: var(--color-secundario);
+    padding: 0.5rem 0.5rem;
+    border-radius: 10px;
+    min-height: 2rem; /* Altura definida con fines estéticos de layout, revisar en issues correspondientes*/
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;  
+  gap: 0.5rem;
+  
+}
+
+.panel-analisis{
+    background-color: var(--color-fondo);
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+    border-radius: 10px;
+}
+.formulario-carga{
+    background-color: var(--color-fondo);
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    min-height: 300px; /* temporal, para visualizar mientras no hay contenido real */
+    border-radius: 10px;
+}
+
+.vista-rango{
+    background-color: var(--color-primario);
+    grid-column: 1 / 3;
+    grid-row: 2/ 3;
+    border-radius: 10px;
+}
+
+
+
