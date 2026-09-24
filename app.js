@@ -6,6 +6,40 @@ const vendedoresPorSede = {
 };
 
 
+const renderizarTabla = function(){
+  const filaTabla = document.querySelector("tbody");
+  let pericias;
+    const guardado = localStorage.getItem("pericias");
+    if (guardado === null) {
+        pericias = [];
+    } else {
+        pericias = JSON.parse(guardado);
+    }
+
+    let contenidoTabla = "";
+
+    for(const pericia of pericias){
+      contenidoTabla += `
+      <tr>
+        <td>${pericia.targa}</td>
+        <td>${pericia.brand}</td>
+        <td>${pericia.concesionaria}</td>
+        <td>${pericia.vendedor}</td>
+        <td>${pericia.fecha}</td>
+        <td>${pericia.tipo}</td>
+        <td>${pericia.notas}</td>
+
+      </tr>
+      `;
+
+    
+    }
+  filaTabla.innerHTML = contenidoTabla;
+
+};
+
+renderizarTabla();
+
 
 
 const formulario = document.querySelector("form");
@@ -83,7 +117,8 @@ localStorage.setItem("pericias", JSON.stringify(pericias));
 const spanCargaExitosa= document.getElementById("carga-exitosa");
 
 spanCargaExitosa.textContent = "Perizia salvata";
-formulario.reset()
+renderizarTabla();
+formulario.reset();
 
 
 
