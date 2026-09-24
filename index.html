@@ -12,10 +12,11 @@
         <section class="panel-analisis"></section>
         <section class="formulario-carga">
             
-            <form>
+            <form novalidate>
                 <div class="campo">
                     <label for="targa">Targa</label>
                     <input type="text" name="targa" id="targa" required pattern="[A-Z]{2}[0-9]{3}[A-Z]{2}" placeholder="AA123BB">
+                    <span id="targa-error"></span>
                 </div>
                 <div class="campo">
                     <label for="brand">Marca</label>
@@ -59,6 +60,7 @@
                         <option value="volkswagen">Volskwagen</option>
                         <option value="volvo">Volvo</option>
                     </select>
+                    <span id="brand-error"></span>
                 </div>
                 <div class="campo">
                     <label for="concesionaria">Seleziona sede</label>
@@ -70,6 +72,7 @@
                         <option value="salaria-usato">Salaria - Usato</option>
                         <option value="barberini">Barberini</option>
                     </select>
+                    <span id="concesionaria-error"></span>
                 </div>
 
                 <div class="campo">
@@ -77,6 +80,7 @@
                     <select name="vendedor" id="vendedor" required>
                         <option value="">Prima seleziona una sede</option>
                     </select>
+                    <span id="vendedor-error"></span>
                 </div>
                 <div class="campo">
                     <fieldset>
@@ -96,13 +100,16 @@
                         <input type="radio" name="tipo" id="tipo-demo" value="demo">
                         <label for="tipo-demo">Demo</label>
                     </div>
+                    
                     </fieldset>
-
+                    <span id="tipo-error"></span>
+                    
                 </div>
                 <div class="campo">
 
                     <label for="fecha">Data</label>
                     <input type="date" name="fecha" id="fecha" required>
+                    <span id="fecha-error"></span>
                 </div>
                 <div class="campo">
                     <label for="notas">Note/osservazioni</label>
