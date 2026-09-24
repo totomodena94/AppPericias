@@ -80,6 +80,14 @@ if(guardado === null){
 pericias.push(pericia);
 localStorage.setItem("pericias", JSON.stringify(pericias));
 
+const spanCargaExitosa= document.getElementById("carga-exitosa");
+
+spanCargaExitosa.textContent = "Perizia salvata";
+formulario.reset()
+
+
+
+
 }
 });
 
