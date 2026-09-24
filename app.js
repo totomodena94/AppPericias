@@ -28,7 +28,10 @@ const renderizarTabla = function(){
         <td>${pericia.fecha}</td>
         <td>${pericia.tipo}</td>
         <td>${pericia.notas}</td>
-        <td><button class="btn-eliminar" data-index="${index}">Elimina</button></td>
+        <td>
+          <button class="btn-eliminar" data-index="${index}">Elimina</button>
+          <button class="btn-editar" data-index="${index}">Edita</button>
+        </td>
 
       </tr>
       `;
@@ -43,6 +46,7 @@ const renderizarTabla = function(){
 
 const tbody = document.querySelector("tbody");
 const formulario = document.querySelector("form");
+let indiceEditando = null;
 renderizarTabla();
 
 tbody.addEventListener("click", (e) =>{
@@ -62,6 +66,28 @@ if(e.target.classList.contains("btn-eliminar")){
   renderizarTabla();
 
 }
+
+if(e.target.classList.contains("btn-editar")){
+  const index = Number(e.target.dataset.index);
+
+  let pericias;
+    const guardado = localStorage.getItem("pericias");
+    if (guardado === null) {
+        pericias = [];
+    } else {
+        pericias = JSON.parse(guardado);
+    }
+    const pericia = pericias[index];
+    document.getElementById("targa").value = pericia.targa;
+    document.getElementById("brand").value = pericia.brand;
+    document.getElementById("concesionaria").value = pericia.concesionaria;
+    document.getElementById("vendedor").value = pericia.vendedor;
+    document.getElementById("fecha").value = pericia.fecha;
+    document.getElementById("notas").value = pericia.notas;
+    formulario.querySelector(`input[name="tipo"][value="${pericia.tipo}"]`).checked = true;
+
+    indiceEditando = index;
+  }
 });
 
 formulario.addEventListener("submit", (e) =>{
@@ -131,7 +157,12 @@ if(guardado === null){
 }else{
   pericias = JSON.parse(guardado);
 }
+
+if(indiceEditando === null){
 pericias.push(pericia);
+} else {
+  pericias[indiceEditando] = pericia;
+}
 localStorage.setItem("pericias", JSON.stringify(pericias));
 
 const spanCargaExitosa= document.getElementById("carga-exitosa");
@@ -139,6 +170,7 @@ const spanCargaExitosa= document.getElementById("carga-exitosa");
 spanCargaExitosa.textContent = "Perizia salvata";
 renderizarTabla();
 formulario.reset();
+indiceEditando = null;
 
 
 
