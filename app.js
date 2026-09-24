@@ -18,7 +18,7 @@ const renderizarTabla = function(){
 
     let contenidoTabla = "";
 
-    for(const pericia of pericias){
+    for(const [index, pericia] of pericias.entries()){
       contenidoTabla += `
       <tr>
         <td>${pericia.targa}</td>
@@ -28,6 +28,7 @@ const renderizarTabla = function(){
         <td>${pericia.fecha}</td>
         <td>${pericia.tipo}</td>
         <td>${pericia.notas}</td>
+        <td><button class="btn-eliminar" data-index="${index}">Elimina</button></td>
 
       </tr>
       `;
@@ -38,11 +39,30 @@ const renderizarTabla = function(){
 
 };
 
+
+
+const tbody = document.querySelector("tbody");
+const formulario = document.querySelector("form");
 renderizarTabla();
 
+tbody.addEventListener("click", (e) =>{
+if(e.target.classList.contains("btn-eliminar")){
+  const index = Number(e.target.dataset.index);
 
+  let pericias;
+    const guardado = localStorage.getItem("pericias");
+    if (guardado === null) {
+        pericias = [];
+    } else {
+        pericias = JSON.parse(guardado);
+    }
 
-const formulario = document.querySelector("form");
+    pericias.splice(index, 1);
+  localStorage.setItem("pericias", JSON.stringify(pericias));
+  renderizarTabla();
+
+}
+});
 
 formulario.addEventListener("submit", (e) =>{
   e.preventDefault();
