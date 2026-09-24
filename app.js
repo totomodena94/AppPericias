@@ -1,19 +1,24 @@
 const vendedoresPorSede = {
   "salaria-nuovo": ["Barcilli", "Terzuoli", "Rossi", "Rossi Sciarra", "Montecchi", "Panetta", "Scrima", "Pileggi", "Gutu", "Felli", "Geamana", "Antinucci", "Fratesi", "Miele", "Mari"],
-  "salaria-usato": ["Grasso", "Corradini", "D'Angelo", "Pellini", "Tommaso"],
+  "salaria-usato": ["Grasso", "Corradini", "D'Angelo", "Pellini", "Serafini"],
   "appia-nuovo": [],
   "appia-usato": [],
 };
 
 
-const renderizarTabla = function(){
+const renderizarTabla = function(periciasARenderizar){
   const filaTabla = document.querySelector("tbody");
   let pericias;
+
+  if(periciasARenderizar === undefined){
     const guardado = localStorage.getItem("pericias");
     if (guardado === null) {
         pericias = [];
     } else {
         pericias = JSON.parse(guardado);
+    }
+    }else{
+      pericias = periciasARenderizar;
     }
 
     let contenidoTabla = "";
@@ -46,8 +51,74 @@ const renderizarTabla = function(){
 
 const tbody = document.querySelector("tbody");
 const formulario = document.querySelector("form");
+const buscadorTarga = document.getElementById("buscador-targa");
+const inputTarga = document.getElementById("targa")
+const aplicaFiltro = document.getElementById("btn-aplicar-filtros");
+const limpiarFiltro = document.getElementById("btn-limpiar-filtros");
 let indiceEditando = null;
 renderizarTabla();
+
+
+limpiarFiltro.addEventListener("click", (e) =>{
+  const mesSeleccionado = document.getElementById("filtro-mese");
+    const vendedorSeleccionado = document.getElementById("filtro-venditore");
+    const tipoSeleccionado = document.getElementById("filtro-tipo");
+
+    mesSeleccionado.value = "";
+    vendedorSeleccionado.value = "";
+    tipoSeleccionado.value = "";
+
+    renderizarTabla();
+
+})
+
+aplicaFiltro.addEventListener("click", (e) =>{
+  e.preventDefault();
+  let pericias;
+    const guardado = localStorage.getItem("pericias");
+    if (guardado === null) {
+        pericias = [];
+    } else {
+        pericias = JSON.parse(guardado);
+    }
+    const mesSeleccionado = document.getElementById("filtro-mese").value;
+    const vendedorSeleccionado = document.getElementById("filtro-venditore").value;
+    const tipoSeleccionado = document.getElementById("filtro-tipo").value;
+
+const periciasFiltradas = pericias.filter(function(pericia) {
+    const cumpleTipo = tipoSeleccionado === "" || pericia.tipo === tipoSeleccionado;
+    const cumpleVendedor = vendedorSeleccionado === "" || pericia.vendedor === vendedorSeleccionado;
+    const cumpleMes = mesSeleccionado === "" || pericia.fecha.startsWith(mesSeleccionado);
+
+    return cumpleTipo && cumpleVendedor && cumpleMes;
+});
+renderizarTabla(periciasFiltradas);
+
+})
+
+
+inputTarga.addEventListener("input", (e) =>{
+  e.target.value = e.target.value.toUpperCase();
+})
+
+buscadorTarga.addEventListener("input", (e) =>{
+let pericias;
+    const guardado = localStorage.getItem("pericias");
+    if (guardado === null) {
+        pericias = [];
+    } else {
+        pericias = JSON.parse(guardado);
+    }
+
+const periciasFiltradas = pericias.filter(function(pericia){
+  return pericia.targa.toUpperCase().includes(e.target.value.toUpperCase());
+});
+
+renderizarTabla(periciasFiltradas);
+
+
+})
+
 
 tbody.addEventListener("click", (e) =>{
 if(e.target.classList.contains("btn-eliminar")){

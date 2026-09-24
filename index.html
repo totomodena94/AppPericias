@@ -129,6 +129,49 @@
         </section>
         
         <section class="vista-rango">
+            <div class="campo">
+                <label for="buscador-targa">Cerca per targa</label>
+                <input type="text" id="buscador-targa" placeholder="AA123BB">
+            </div>
+
+            <button id="btn-toggle-filtros">Filtri</button>
+
+            <div id="panel-filtros" class="oculto">
+
+                <div class="campo">
+                    <label for="filtro-mese">Mese</label>
+                    <input type="month" id="filtro-mese">
+                </div>
+
+                <div class="campo">
+                    <label for="filtro-venditore">Venditore</label>
+                    <select id="filtro-venditore">
+                        <option value="">Tutti i venditori</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="filtro-tipo">Tipo</label>
+                    <select id="filtro-tipo">
+                        <option value="perizia">Perizia</option>
+                        <option value="controperizia">Controperizia</option>
+                        <option value="demo">Demo</option>
+
+                    </select>
+
+                </div>
+
+                <button type="button" id="btn-aplicar-filtros">Applica filtri</button>
+                <button type="button" id="btn-limpiar-filtros">Pulisci filtri</button>
+
+
+
+            </div>
+
+
+
+
+
             <table>
                 <thead>
                     <tr>
