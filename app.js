@@ -21,6 +21,8 @@ const renderizarTabla = function(periciasARenderizar){
       pericias = periciasARenderizar;
     }
 
+    periciasVisibles = pericias;
+
     let contenidoTabla = "";
 
     for(const [index, pericia] of pericias.entries()){
@@ -55,8 +57,29 @@ const buscadorTarga = document.getElementById("buscador-targa");
 const inputTarga = document.getElementById("targa")
 const aplicaFiltro = document.getElementById("btn-aplicar-filtros");
 const limpiarFiltro = document.getElementById("btn-limpiar-filtros");
+const btnExportar = document.getElementById("btn-exportar-csv");
 let indiceEditando = null;
+let periciasVisibles = [];
 renderizarTabla();
+
+
+
+btnExportar.addEventListener("click", (e) =>{
+  let contenidoCSV = "Targa, Marca, Sede, Venditore, Data, Tipo, Note/n";
+
+  for(const pericia of periciasVisibles){
+    contenidoCSV += `${pericia.targa},${pericia.brand},${pericia.concesionaria},${pericia.vendedor},${pericia.fecha},${pericia.tipo},${pericia.notas}\n`;
+  }
+
+  const blob = new Blob([contenidoCSV], {type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "pericias.csv";
+  link.click();
+
+})
 
 
 limpiarFiltro.addEventListener("click", (e) =>{
