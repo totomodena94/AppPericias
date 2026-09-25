@@ -145,6 +145,13 @@ renderizarTabla(periciasFiltradas);
 
 tbody.addEventListener("click", (e) =>{
 if(e.target.classList.contains("btn-eliminar")){
+
+  if (e.target.classList.contains("btn-eliminar")){
+    const confirmado = confirm("Sei sicuro di voler eliminare questa perizia?");
+    if(!confirmado){
+      return;
+    }
+  }
   const index = Number(e.target.dataset.index);
 
   let pericias;
