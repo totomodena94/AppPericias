@@ -58,10 +58,47 @@ const inputTarga = document.getElementById("targa")
 const aplicaFiltro = document.getElementById("btn-aplicar-filtros");
 const limpiarFiltro = document.getElementById("btn-limpiar-filtros");
 const btnExportar = document.getElementById("btn-exportar-csv");
+const btnCerrarMes = document.getElementById("btn-cerrar-mes");
 let indiceEditando = null;
 let periciasVisibles = [];
 renderizarTabla();
 
+
+btnCerrarMes.addEventListener("click", (e) =>{
+const confirmado = confirm("Sei sicuro di voler chiudere il mese?");
+    if(!confirmado){
+      return;
+    }
+
+    let pericias;
+const guardado = localStorage.getItem("pericias");
+if (guardado === null) {
+    pericias = [];
+} else {
+    pericias = JSON.parse(guardado);
+}
+const hoy = new Date();
+const año = hoy.getFullYear();
+const mesNumero = hoy.getMonth() + 1;
+const mesFormateado = String(mesNumero).padStart(2, "0");
+const mes = `${año}-${mesFormateado}`;
+
+const resumen = {mes: mes, total: pericias.length};
+let resumenMensual;
+const guardadoResumen = localStorage.getItem("resumenMensual");
+if(guardadoResumen === null){
+  resumenMensual = [];
+} else {
+  resumenMensual = JSON.parse(guardadoResumen);
+}
+
+resumenMensual.push(resumen);
+localStorage.setItem("resumenMensual", JSON.stringify(resumenMensual));
+
+localStorage.setItem("pericias", JSON.stringify([]));
+renderizarTabla();
+
+})
 
 
 btnExportar.addEventListener("click", (e) =>{
