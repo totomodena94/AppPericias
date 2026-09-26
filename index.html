@@ -9,7 +9,11 @@
 <body>
     <header class="header"></header>
     <main class="app">
-        <section class="panel-analisis"></section>
+        <section class="panel-analisis">
+
+            <div id="contenido-analisis"></div>
+
+        </section>
         <section class="formulario-carga">
             
             <form novalidate>
@@ -131,6 +135,11 @@
         <section class="vista-rango">
 
             <button type="button" id="btn-exportar-csv">Esporta CSV</button>
+            <div class="campo">
+                 <label for="importar-historico">Importa storico (CSV)</label>
+                 <input type="file" id="importar-historico" accept=".csv">
+            </div>
+            
             <button type="button" id="btn-cerrar-mes">Chiudi mese</button>
             <div class="campo">
                 <label for="buscador-targa">Cerca per targa</label>

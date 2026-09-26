@@ -1,60 +1,353 @@
-*{
-    margin: 0;
-    padding: 0;
-}
+/* ============================================
+   App Pericias — Foglio di stile
+   Basato su CSS Grid, Custom Properties e Flexbox
+   (concetti visti in The Odin Project)
+   ============================================ */
+
+/* ---- Variabili globali ---- */
 :root {
-  --color-primario: #bbbffb;
-  --color-secundario: #324057;
-  --color-fondo: #dfdfec;
+  --color-primario: #6a70c1;
+  --color-secundario: #32574E;
+  --color-fondo: #f5f5f7;
+  --color-texto: #1f2933;
+  --color-borde: #e0e0e6;
+  --color-exito: #2f9e44;
+  --color-errore: #d64545;
   --font-base: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --radius: 10px;
+  --ombra: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
+
+/* ---- Reset base ---- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
+  font-family: var(--font-base);
+  color: var(--color-texto);
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: 0.5rem;
-  padding: 0.5rem; 
+  gap: 0.75rem;
+  padding: 0.75rem;
   min-height: 100vh;
-  box-sizing: border-box; /* para que el padding no sume ancho extra y rompa el 100vh/100% */
-  font-family: var(--font-base);
+  background-color: #ececf2;
 }
 
-.header{
-    background-color: var(--color-secundario);
-    padding: 0.5rem 0.5rem;
-    border-radius: 10px;
-    min-height: 2rem; /* Altura definida con fines estéticos de layout, revisar en issues correspondientes*/
+/* ---- Header ---- */
+.header {
+  background-color: var(--color-secundario);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  box-shadow: var(--ombra);
 }
 
+/* ---- Layout principale ---- */
 .app {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;  
-  gap: 0.5rem;
-  
+  grid-template-rows: auto auto;
+  gap: 0.75rem;
 }
 
-.panel-analisis{
-    background-color: var(--color-fondo);
+.panel-analisis,
+.formulario-carga {
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--ombra);
+}
+
+.panel-analisis {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.formulario-carga {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+}
+
+.vista-rango {
+  grid-column: 1 / 3;
+  grid-row: 2 / 3;
+  background-color: white;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--ombra);
+}
+
+/* ---- Formulario ---- */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-secundario);
+}
+
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  background-color: white;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px rgba(106, 112, 193, 0.25);
+}
+
+input#targa {
+  text-transform: uppercase;
+}
+
+fieldset {
+  border: 1px solid var(--color-borde);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-secundario);
+  padding: 0 0.4rem;
+}
+
+fieldset div {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+fieldset label {
+  font-weight: normal;
+  color: var(--color-texto);
+}
+
+/* Messaggi di errore e conferma */
+[id$="-error"] {
+  font-size: 0.8rem;
+  color: var(--color-errore);
+  min-height: 1rem;
+}
+
+#carga-esitosa,
+#carga-exitosa {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-exito);
+}
+
+/* ---- Bottoni ---- */
+button {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.05s ease, opacity 0.15s ease, background-color 0.15s ease;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.acciones-form {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.3rem;
+}
+
+button[type="submit"] {
+  background-color: var(--color-primario);
+  color: white;
+}
+
+button[type="submit"]:hover {
+  opacity: 0.9;
+}
+
+button[type="reset"] {
+  background-color: transparent;
+  color: var(--color-secundario);
+  border: 1px solid var(--color-borde);
+}
+
+button[type="reset"]:hover {
+  background-color: #f0f0f4;
+}
+
+/* Bottoni di filtro / azioni secondarie */
+#btn-toggle-filtros,
+#btn-aplicar-filtros,
+#btn-cerrar-mese,
+#btn-exportar-csv {
+  background-color: var(--color-secundario);
+  color: white;
+}
+
+#btn-toggle-filtros:hover,
+#btn-aplicar-filtros:hover,
+#btn-cerrar-mese:hover,
+#btn-exportar-csv:hover {
+  opacity: 0.9;
+}
+
+#btn-limpiar-filtros {
+  background-color: transparent;
+  color: var(--color-secundario);
+  border: 1px solid var(--color-borde);
+}
+
+#btn-limpiar-filtros:hover {
+  background-color: #f0f0f4;
+}
+
+/* Bottoni sulle righe della tabella */
+.btn-editar,
+.btn-eliminar {
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+}
+
+.btn-editar {
+  background-color: #edf0fb;
+  color: var(--color-primario);
+}
+
+.btn-editar:hover {
+  background-color: #dfe3f7;
+}
+
+.btn-eliminar {
+  background-color: #fbebeb;
+  color: var(--color-errore);
+}
+
+.btn-eliminar:hover {
+  background-color: #f6d9d9;
+}
+
+/* ---- Ricerca e filtri ---- */
+#buscador-targa {
+  max-width: 260px;
+}
+
+#panel-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin: 0.9rem 0;
+  padding: 0.9rem;
+  background-color: var(--color-fondo);
+  border-radius: 8px;
+}
+
+#panel-filtros .campo {
+  min-width: 160px;
+}
+
+.oculto {
+  display: none;
+}
+
+/* ---- Tabella ---- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+}
+
+thead th {
+  background-color: var(--color-secundario);
+  color: white;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+}
+
+thead th:first-child {
+  border-top-left-radius: 8px;
+}
+
+thead th:last-child {
+  border-top-right-radius: 8px;
+}
+
+tbody td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+tbody tr:nth-child(even) {
+  background-color: #fafafc;
+}
+
+tbody tr:hover {
+  background-color: #f0f0f8;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 800px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .panel-analisis {
     grid-column: 1 / 2;
     grid-row: 1 / 2;
-    border-radius: 10px;
-}
-.formulario-carga{
-    background-color: var(--color-fondo);
-    grid-column: 2 / 3;
-    grid-row: 1 / 2;
-    min-height: 300px; /* temporal, para visualizar mientras no hay contenido real */
-    border-radius: 10px;
-}
+  }
 
-.vista-rango{
-    background-color: var(--color-primario);
-    grid-column: 1 / 3;
-    grid-row: 2/ 3;
-    border-radius: 10px;
-}
-#targa{
-    text-transform: uppercase;
-}
+  .formulario-carga {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+  }
 
+  .vista-rango {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4;
+  }
 
+  table {
+    font-size: 0.8rem;
+  }
+}
