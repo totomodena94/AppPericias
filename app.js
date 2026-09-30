@@ -233,76 +233,12 @@ const aplicaFiltro = document.getElementById("btn-aplicar-filtros");
 const limpiarFiltro = document.getElementById("btn-limpiar-filtros");
 const btnExportar = document.getElementById("btn-exportar-csv");
 const btnCerrarMes = document.getElementById("btn-cerrar-mes");
-const inputImportarHistorico = document.getElementById("importar-historico");
 
 let indiceEditando = null; // null = carga nueva; un número = editando esa posición del array
 let periciasVisibles = []; // lo que está actualmente pintado en la tabla (todo o filtrado)
 
 // primer pintado, apenas carga la página
 mostrarVistaPorDefecto();
-
-
-// ============================================
-// IMPORTAR HISTÓRICO (CSV)
-// Lee un archivo .csv elegido por el usuario y agrega
-// cada fila como una pericia más dentro de "pericias".
-// ============================================
-inputImportarHistorico.addEventListener("change", (e) => {
-  const archivo = e.target.files[0];
-  if (!archivo) {
-    return;
-  }
-
-  const lector = new FileReader();
-
-  lector.onload = function (eventoLectura) {
-    const contenido = eventoLectura.target.result;
-
-    const lineas = contenido.split("\n").filter(function (linea) {
-      return linea.trim() !== "";
-    });
-
-    const filasDeDatos = lineas.slice(1); // la primera línea es el encabezado
-
-    let pericias;
-    const guardado = localStorage.getItem("pericias");
-    if (guardado === null) {
-      pericias = [];
-    } else {
-      pericias = JSON.parse(guardado);
-    }
-
-    let importadas = 0;
-
-    for (const linea of filasDeDatos) {
-      const columnas = linea.split(",");
-
-      const pericia = {
-        targa: columnas[0],
-        brand: columnas[1],
-        concesionaria: columnas[2],
-        vendedor: columnas[3],
-        fecha: columnas[4],
-        tipo: columnas[5],
-        notas: columnas[6],
-        esConversion: columnas[7] === "true",
-        origen: columnas[8] ? columnas[8].trim() : "historico",
-      };
-
-      pericias.push(pericia);
-      importadas += 1;
-    }
-
-    localStorage.setItem("pericias", JSON.stringify(pericias));
-    mostrarVistaPorDefecto();
-
-    alert(`Importazione completata: ${importadas} pericias agregadas.`);
-
-    inputImportarHistorico.value = "";
-  };
-
-  lector.readAsText(archivo);
-});
 
 
 // ============================================
