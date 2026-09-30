@@ -101,6 +101,22 @@ const calcularPorcentajeConversionPericias = function (pericias) {
 // apenas carga la página.
 // ============================================
 
+// Escapa los caracteres especiales de HTML para que un texto
+// escrito por el usuario (ej. notas) se muestre tal cual y no
+// se interprete como HTML al ir dentro de innerHTML (evita XSS).
+// Si el campo no existe (registro viejo importado), devuelve "".
+const escaparHTML = function (texto) {
+  if (texto === undefined || texto === null) {
+    return "";
+  }
+  return String(texto)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+};
+
 // Pinta la tabla de pericias. Si no le pasan un array,
 // lee todo desde localStorage; si le pasan uno
 // (por ejemplo, ya filtrado), usa ese en su lugar.
@@ -134,7 +150,7 @@ const renderizarTabla = function (periciasARenderizar) {
         <td>${pericia.vendedor}</td>
         <td>${pericia.fecha}</td>
         <td>${pericia.tipo}</td>
-        <td>${pericia.notas}</td>
+        <td>${escaparHTML(pericia.notas)}</td>
         <td>
           <button class="btn-eliminar" data-index="${index}">Elimina</button>
           <button class="btn-editar" data-index="${index}">Edita</button>
