@@ -8,12 +8,17 @@ Los estudios de peritaje que operan con varios concesionarios enfrentan un regis
 
 ## Estado actual
 
-En desarrollo. Milestone 1 (diseño y estructura base) completado:
-- Layout general definido con CSS Grid
-- Estructura HTML semántica (header, panel de análisis, formulario, vista por rango)
-- Paleta de colores y tipografía base aplicadas con CSS Custom Properties
+En desarrollo activo. Completado hasta el momento:
 
-Próximo milestone: formulario de carga con validación y persistencia en localStorage.
+- **Milestone 1** — Diseño y estructura base: layout con CSS Grid, HTML semántico, paleta y tipografía con CSS Custom Properties.
+- **Milestone 2** — Formulario de carga con validación (Constraint Validation API) y persistencia en `localStorage`.
+- **Milestone 3** — Visualización y gestión de datos: tabla dinámica, edición y eliminación de pericias.
+- **Milestone 4** — Exportación mensual a CSV y checkpoint de cierre de mes.
+- Importación de histórico de pericias desde CSV, incorporada como funcionalidad adicional.
+
+**En curso — Milestone 5 (analítica y gráficas):** tendencia mensual de pericias, distribución por día de la semana, distribución por tipo (perizia/controperizia/demo).
+
+**Próximo milestone — Backend real:** migrar la persistencia de `localStorage` a una base de datos, y evaluar la necesidad de soporte multiusuario.
 
 ## Stack
 
@@ -21,6 +26,10 @@ Próximo milestone: formulario de carga con validación y persistencia en localS
 - CSS3 (Grid, Custom Properties)
 - JavaScript (vanilla — sin frameworks ni librerías)
 - Persistencia: localStorage (sin backend por ahora)
+
+## Flujo de trabajo
+
+Ver [WORKFLOW.md](./WORKFLOW.md) para las convenciones de ramas, commits y el checklist de Definition of Done que se sigue antes de mergear cualquier cambio.
 
 ## Roadmap
 
