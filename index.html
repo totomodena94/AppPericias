@@ -13,6 +13,36 @@
 
             <div id="contenido-analisis"></div>
 
+            <div class="graficos-carousel">
+                <div class="graficos-track" id="graficos-track">
+                    <div class="grafico-contenedor">
+                        <h3>Tendenza mensile</h3>
+                        <div class="grafico-lienzo"><canvas id="chart-tendencia-mensual"></canvas></div>
+                    </div>
+                    <div class="grafico-contenedor">
+                        <h3>Perizie per giorno (mese in corso)</h3>
+                        <div class="grafico-lienzo"><canvas id="chart-dia-tipo"></canvas></div>
+                    </div>
+                    <div class="grafico-contenedor">
+                        <h3>Distribuzione per tipo (mese in corso)</h3>
+                        <div class="grafico-lienzo"><canvas id="chart-distribucion-tipo"></canvas></div>
+                    </div>
+                    <div class="grafico-contenedor">
+                        <h3>Conversione in seconda perizia (storico)</h3>
+                        <div class="grafico-lienzo"><canvas id="chart-conversion"></canvas></div>
+                    </div>
+                    <div class="grafico-contenedor">
+                        <h3>Top venditori (ultimi 3 mesi)</h3>
+                        <div class="grafico-lienzo"><canvas id="chart-vendedores"></canvas></div>
+                    </div>
+                </div>
+                <div class="carousel-controles">
+                    <button type="button" id="carousel-anterior" aria-label="Grafico precedente">‹</button>
+                    <div class="carousel-indicadores" id="carousel-indicadores"></div>
+                    <button type="button" id="carousel-siguiente" aria-label="Grafico successivo">›</button>
+                </div>
+            </div>
+
         </section>
         <section class="formulario-carga">
             
@@ -83,7 +113,6 @@
                     <label for="vendedor">Venditore</label>
                     <select name="vendedor" id="vendedor" required>
                         <option value="">Prima seleziona una sede</option>
-                        <option value="test">ejempl</option>
                     </select>
                     <span id="vendedor-error"></span>
                 </div>
@@ -204,6 +233,7 @@
 
 
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
