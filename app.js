@@ -1,13 +1,13 @@
 // ============================================
 // DATOS ESTÁTICOS
 // Vendedores agrupados por sede/división.
-// Todavía faltan cargar los de Via Appia.
 // ============================================
 const vendedoresPorSede = {
-  "salaria-nuovo": ["Barcilli", "Terzuoli", "Rossi", "Rossi Sciarra", "Montecchi", "Panetta", "Scrima", "Pileggi", "Gutu", "Felli", "Geamana", "Antinucci", "Fratesi", "Miele", "Mari"],
-  "salaria-usato": ["Grasso", "Corradini", "D'Angelo", "Pellini", "Serafini"],
-  "appia-nuovo": [],
-  "appia-usato": [],
+  "salaria-nuovo": ["Barcilli", "Terzuoli", "Rossi", "Rossi Sciarra", "Montecchi", "Panetta", "Scrima", "Pileggi", "Gutu", "Felli", "Geamana", "Antinucci", "Fratesi", "Miele", "Mari", "Litta"],
+  "salaria-usato": ["Grasso", "Corradini", "D'Angelo", "Pelini", "Serafini", "Gastaldello", "Risita", "Silvestri"],
+  "appia-nuovo": ["Brutti", "Buttarelli", "Cesarini", "Chiarelli", "Alessandroni", "De Angelis", "Fresia", "Corirossi", "Perra", "Zevini", "Sacchi", "Scrocca", "Calderino", "Venditti"],
+  "appia-usato": ["Amaricci", "Miscioscia", "Nobili"],
+  "barberini": ["Limardi", "Macrí", "Nardulli", "Sbizzera", "Borgia"],
 };
 
 
@@ -90,6 +90,128 @@ const calcularPorcentajeConversionPericias = function (pericias) {
   const porcentajeDeConversion = (patentesRepetidas.length / conteoComoArray.length) * 100;
 
   return porcentajeDeConversion;
+};
+
+// Agrupa TODO el historial por mes ("YYYY-MM") y cuenta cuántas pericias
+// hay en cada uno. A diferencia de las demás funciones de esta sección,
+// usa el historial completo a propósito (es para el gráfico de tendencia
+// mensual, que tiene sentido solo mirando varios años). Devuelve las
+// etiquetas ya ordenadas cronológicamente junto con sus conteos.
+const agruparPorMes = function (pericias) {
+  const conteo = {};
+
+  for (const pericia of pericias) {
+    if (!pericia.fecha) continue;
+    const mes = pericia.fecha.slice(0, 7); // "YYYY-MM"
+
+    if (conteo[mes] === undefined) {
+      conteo[mes] = 1;
+    } else {
+      conteo[mes] += 1;
+    }
+  }
+
+  // las claves "YYYY-MM" ordenan alfabéticamente igual que cronológicamente
+  const mesesOrdenados = Object.keys(conteo).sort();
+  const data = mesesOrdenados.map(function (mes) {
+    return conteo[mes];
+  });
+
+  return { labels: mesesOrdenados, data: data };
+};
+
+// Devuelve solo las pericias del mes calendario en curso (distinto de
+// filtrarUltimosMeses, que trae un rango de N meses hacia atrás).
+const filtrarMesEnCurso = function (pericias) {
+  const hoy = new Date();
+  const año = hoy.getFullYear();
+  const mesFormateado = String(hoy.getMonth() + 1).padStart(2, "0");
+  const mesEnCurso = `${año}-${mesFormateado}`;
+
+  return pericias.filter(function (pericia) {
+    return pericia.fecha && pericia.fecha.startsWith(mesEnCurso);
+  });
+};
+
+// Agrupa las pericias del mes en curso por día (1 al último día del mes)
+// y, dentro de cada día, por tipo. Pensado para una barra apilada por día,
+// con un segmento de color por tipo.
+const agruparPorDiaYTipo = function (periciasDelMes) {
+  const hoy = new Date();
+  const año = hoy.getFullYear();
+  const mes = hoy.getMonth(); // 0-11
+  // día 0 del mes siguiente = último día de este mes
+  const ultimoDia = new Date(año, mes + 1, 0).getDate();
+
+  const porDia = {};
+  for (let dia = 1; dia <= ultimoDia; dia++) {
+    porDia[dia] = { perizia: 0, controperizia: 0, demo: 0 };
+  }
+
+  for (const pericia of periciasDelMes) {
+    if (!pericia.fecha) continue;
+    const dia = Number(pericia.fecha.slice(8, 10));
+    if (!porDia[dia]) continue; // fecha corrupta o fuera de rango: se ignora
+    if (porDia[dia][pericia.tipo] === undefined) continue; // tipo desconocido: se ignora
+    porDia[dia][pericia.tipo] += 1;
+  }
+
+  const labels = [];
+  const perizia = [];
+  const controperizia = [];
+  const demo = [];
+
+  for (let dia = 1; dia <= ultimoDia; dia++) {
+    labels.push(String(dia));
+    perizia.push(porDia[dia].perizia);
+    controperizia.push(porDia[dia].controperizia);
+    demo.push(porDia[dia].demo);
+  }
+
+  return { labels: labels, perizia: perizia, controperizia: controperizia, demo: demo };
+};
+
+// Cuenta cuántas pericias del mes en curso hay de cada tipo.
+const contarPorTipo = function (periciasDelMes) {
+  const conteo = { perizia: 0, controperizia: 0, demo: 0 };
+
+  for (const pericia of periciasDelMes) {
+    if (conteo[pericia.tipo] === undefined) continue; // tipo desconocido: se ignora
+    conteo[pericia.tipo] += 1;
+  }
+
+  return conteo;
+};
+
+// Cuenta, sobre el historial completo, cuántas patentes aparecen una sola
+// vez ("únicas") contra cuántas aparecen más de una vez ("convertidas" a
+// segunda pericia). Son los conteos crudos que necesita el gráfico 4;
+// calcularPorcentajeConversionPericias ya calcula el porcentaje a partir
+// de la misma idea, pero para un gráfico de torta se necesitan los conteos.
+const contarConversion = function (pericias) {
+  const conteo = {};
+
+  for (const pericia of pericias) {
+    const targaPericia = pericia.targa;
+    if (conteo[targaPericia] === undefined) {
+      conteo[targaPericia] = 1;
+    } else {
+      conteo[targaPericia] += 1;
+    }
+  }
+
+  let unicas = 0;
+  let convertidas = 0;
+
+  for (const cantidad of Object.values(conteo)) {
+    if (cantidad > 1) {
+      convertidas += 1;
+    } else {
+      unicas += 1;
+    }
+  }
+
+  return { unicas: unicas, convertidas: convertidas };
 };
 
 
@@ -202,6 +324,150 @@ const renderizarAnalisis = function (periciasParaAnalizar) {
   `;
 };
 
+// ============================================
+// GRÁFICOS (Chart.js)
+// Paleta validada con validate_palette.js (skill de dataviz):
+// segura para daltonismo y con contraste chequeado, no elegida a ojo.
+// ============================================
+const coloresTipo = {
+  perizia: "#2a78d6",
+  controperizia: "#eb6834",
+  demo: "#1baf7a",
+};
+
+const coloresConversion = {
+  unicas: "#2a78d6",
+  convertidas: "#eb6834",
+};
+
+// Guarda las instancias de Chart.js ya creadas, indexadas por id de
+// canvas. Hace falta para poder destruir la instancia anterior antes de
+// crear una nueva: si no, Chart.js las va acumulando en el mismo canvas
+// y termina rompiendo el repintado.
+const instanciasGraficos = {};
+
+const crearOActualizarGrafico = function (idCanvas, config) {
+  if (instanciasGraficos[idCanvas]) {
+    instanciasGraficos[idCanvas].destroy();
+  }
+  const contexto = document.getElementById(idCanvas).getContext("2d");
+  instanciasGraficos[idCanvas] = new Chart(contexto, config);
+};
+
+// Dibuja los 5 gráficos del panel de análisis. A diferencia de
+// renderizarTabla/renderizarAnalisis, recibe siempre el historial
+// COMPLETO: cada gráfico recorta lo que necesita puertas adentro
+// (tendencia y conversión usan todo el historial; día/tipo y
+// distribución por tipo usan solo el mes en curso; vendedores usa
+// los últimos 3 meses), así que no tiene sentido pre-filtrar antes.
+const renderizarGraficos = function (pericias) {
+  // --- 1. Tendencia mensual (línea, historial completo) ---
+  const tendencia = agruparPorMes(pericias);
+  crearOActualizarGrafico("chart-tendencia-mensual", {
+    type: "line",
+    data: {
+      labels: tendencia.labels,
+      datasets: [{
+        label: "Perizie al mese",
+        data: tendencia.data,
+        borderColor: coloresTipo.perizia,
+        backgroundColor: coloresTipo.perizia,
+        borderWidth: 2,
+        pointRadius: 3,
+        tension: 0.2,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+  });
+
+  // --- 2. Perizie per giorno, apiladas por tipo (mes en curso) ---
+  const mesEnCurso = filtrarMesEnCurso(pericias);
+  const porDia = agruparPorDiaYTipo(mesEnCurso);
+  crearOActualizarGrafico("chart-dia-tipo", {
+    type: "bar",
+    data: {
+      labels: porDia.labels,
+      datasets: [
+        { label: "Perizia", data: porDia.perizia, backgroundColor: coloresTipo.perizia },
+        { label: "Controperizia", data: porDia.controperizia, backgroundColor: coloresTipo.controperizia },
+        { label: "Demo", data: porDia.demo, backgroundColor: coloresTipo.demo },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } },
+      scales: {
+        x: { stacked: true },
+        y: { stacked: true, beginAtZero: true, ticks: { precision: 0 } },
+      },
+    },
+  });
+
+  // --- 3. Distribución por tipo (donut, mes en curso) ---
+  const porTipo = contarPorTipo(mesEnCurso);
+  crearOActualizarGrafico("chart-distribucion-tipo", {
+    type: "doughnut",
+    data: {
+      labels: ["Perizia", "Controperizia", "Demo"],
+      datasets: [{
+        data: [porTipo.perizia, porTipo.controperizia, porTipo.demo],
+        backgroundColor: [coloresTipo.perizia, coloresTipo.controperizia, coloresTipo.demo],
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } },
+    },
+  });
+
+  // --- 4. Conversión a segunda pericia (donut, historial completo) ---
+  const conversion = contarConversion(pericias);
+  crearOActualizarGrafico("chart-conversion", {
+    type: "doughnut",
+    data: {
+      labels: ["Prima perizia", "Convertita in seconda perizia"],
+      datasets: [{
+        data: [conversion.unicas, conversion.convertidas],
+        backgroundColor: [coloresConversion.unicas, coloresConversion.convertidas],
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: "bottom" } },
+    },
+  });
+
+  // --- 5. Top 5 venditori (barras horizontales, últimos 3 meses) ---
+  const ultimosTresMeses = filtrarUltimosMeses(pericias, 3);
+  const topVendedores = calcularPericiasPorVendedor(ultimosTresMeses).slice(0, 5);
+  crearOActualizarGrafico("chart-vendedores", {
+    type: "bar",
+    data: {
+      labels: topVendedores.map(function (entrada) { return entrada[0]; }),
+      datasets: [{
+        label: "Perizie",
+        data: topVendedores.map(function (entrada) { return entrada[1]; }),
+        backgroundColor: coloresTipo.perizia,
+      }],
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+    },
+  });
+};
+
 // Recalcula la vista por defecto (últimos 3 meses) y repinta tabla + análisis.
 // La usamos en vez de llamar renderizarTabla()/renderizarAnalisis() sueltas,
 // para no mostrar sin querer los 3 años de historial completo.
@@ -218,6 +484,7 @@ const mostrarVistaPorDefecto = function () {
 
   renderizarTabla(periciasRecientes);
   renderizarAnalisis(periciasRecientes);
+  renderizarGraficos(pericias); // usa el historial completo, no periciasRecientes
 };
 
 
@@ -229,6 +496,8 @@ const tbody = document.querySelector("tbody");
 const formulario = document.querySelector("form");
 const buscadorTarga = document.getElementById("buscador-targa");
 const inputTarga = document.getElementById("targa");
+const inputConcesionaria = document.getElementById("concesionaria");
+const inputVendedor = document.getElementById("vendedor");
 const aplicaFiltro = document.getElementById("btn-aplicar-filtros");
 const limpiarFiltro = document.getElementById("btn-limpiar-filtros");
 const btnExportar = document.getElementById("btn-exportar-csv");
@@ -236,6 +505,108 @@ const btnCerrarMes = document.getElementById("btn-cerrar-mes");
 
 let indiceEditando = null; // null = carga nueva; un número = editando esa posición del array
 let periciasVisibles = []; // lo que está actualmente pintado en la tabla (todo o filtrado)
+
+
+// ============================================
+// VENDEDOR SEGÚN SEDE
+// El select de vendedores depende de qué sede se eligió
+// (vendedoresPorSede), así que se repuebla dinámicamente.
+// ============================================
+
+// Repuebla el <select> de vendedores con los de la sede recibida.
+// Se usa tanto al cambiar la sede a mano (evento "change") como al
+// cargar una pericia existente para editar, donde hay que repoblar
+// ANTES de poder asignarle el vendedor guardado (si no, el <select>
+// todavía tiene las opciones de la sede anterior y el valor no pega).
+const poblarVendedoresDeSede = function (sede) {
+  const vendedoresDeLaSede = vendedoresPorSede[sede];
+
+  inputVendedor.innerHTML = "";
+
+  if (!sede || !vendedoresDeLaSede) {
+    const opcionPlaceholder = document.createElement("option");
+    opcionPlaceholder.value = "";
+    opcionPlaceholder.textContent = "Prima seleziona una sede";
+    inputVendedor.appendChild(opcionPlaceholder);
+    return;
+  }
+
+  const opcionVacia = document.createElement("option");
+  opcionVacia.value = "";
+  opcionVacia.textContent = "Seleziona venditore";
+  inputVendedor.appendChild(opcionVacia);
+
+  for (const nombre of vendedoresDeLaSede) {
+    const opcion = document.createElement("option");
+    opcion.value = nombre;
+    opcion.textContent = nombre;
+    inputVendedor.appendChild(opcion);
+  }
+};
+
+inputConcesionaria.addEventListener("change", (e) => {
+  poblarVendedoresDeSede(e.target.value);
+});
+
+// Población del filtro "Venditore" (panel de filtros): todos los
+// vendedores de todas las sedes juntos, sin duplicados y ordenados
+// alfabéticamente (acá no depende de ninguna sede, es un filtro global).
+const filtroVendedorSelect = document.getElementById("filtro-venditore");
+const todosLosVendedores = [...new Set(Object.values(vendedoresPorSede).flat())].sort();
+
+for (const nombre of todosLosVendedores) {
+  const opcion = document.createElement("option");
+  opcion.value = nombre;
+  opcion.textContent = nombre;
+  filtroVendedorSelect.appendChild(opcion);
+}
+
+
+// ============================================
+// CARRUSEL DE GRÁFICOS
+// Los 5 gráficos del panel de análisis se muestran de a uno,
+// deslizando con flechas o los puntos indicadores.
+// ============================================
+const carruselTrack = document.getElementById("graficos-track");
+const carruselAnterior = document.getElementById("carousel-anterior");
+const carruselSiguiente = document.getElementById("carousel-siguiente");
+const carruselIndicadores = document.getElementById("carousel-indicadores");
+
+let indiceGraficoActual = 0;
+const cantidadGraficos = carruselTrack.children.length;
+
+// Un punto indicador por gráfico, clickeable para saltar directo a ese.
+for (let i = 0; i < cantidadGraficos; i++) {
+  const punto = document.createElement("button");
+  punto.type = "button";
+  punto.setAttribute("aria-label", `Vai al grafico ${i + 1}`);
+  punto.addEventListener("click", () => irAGrafico(i));
+  carruselIndicadores.appendChild(punto);
+}
+
+// Desliza el carrusel al gráfico "indice", con vuelta circular
+// (después del último vuelve al primero y viceversa), y marca
+// el punto indicador correspondiente como activo.
+const irAGrafico = function (indice) {
+  if (indice < 0) {
+    indice = cantidadGraficos - 1;
+  } else if (indice >= cantidadGraficos) {
+    indice = 0;
+  }
+
+  indiceGraficoActual = indice;
+  carruselTrack.style.transform = `translateX(-${indice * 100}%)`;
+
+  const puntos = carruselIndicadores.children;
+  for (let i = 0; i < puntos.length; i++) {
+    puntos[i].classList.toggle("activo", i === indice);
+  }
+};
+
+carruselAnterior.addEventListener("click", () => irAGrafico(indiceGraficoActual - 1));
+carruselSiguiente.addEventListener("click", () => irAGrafico(indiceGraficoActual + 1));
+
+irAGrafico(0); // estado inicial
 
 // primer pintado, apenas carga la página
 mostrarVistaPorDefecto();
@@ -432,6 +803,7 @@ tbody.addEventListener("click", (e) => {
     document.getElementById("targa").value = pericia.targa;
     document.getElementById("brand").value = pericia.brand;
     document.getElementById("concesionaria").value = pericia.concesionaria;
+    poblarVendedoresDeSede(pericia.concesionaria); // repuebla antes de asignar, si no el value no pega
     document.getElementById("vendedor").value = pericia.vendedor;
     document.getElementById("fecha").value = pericia.fecha;
     document.getElementById("notas").value = pericia.notas;
