@@ -173,6 +173,33 @@ fieldset label {
   color: var(--color-exito);
 }
 
+/* Aviso de autocompletado (issue #46): distinto del éxito de guardado
+   (usa el color primario, no el verde de "Perizia salvata") para que
+   no se confundan visualmente. */
+.mensaje-autocompletado {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-primario);
+}
+
+/* Checkbox "Non si conosce il venditore" (excepción al required, igual
+   que "demo" pero para perizia/controperizia con vendedor desconocido). */
+.checkbox-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: normal;
+  color: var(--color-texto);
+  margin-top: 0.2rem;
+}
+
+.checkbox-inline input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+}
+
 /* ---- Bottoni ---- */
 button {
   font-family: inherit;
