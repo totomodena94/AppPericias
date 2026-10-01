@@ -1,4 +1,4 @@
-// ============================================
+/// ============================================
 // DATOS ESTÁTICOS
 // Vendedores agrupados por sede/división.
 // ============================================
@@ -8,6 +8,56 @@ const vendedoresPorSede = {
   "appia-nuovo": ["Brutti", "Buttarelli", "Cesarini", "Chiarelli", "Alessandroni", "De Angelis", "Fresia", "Corirossi", "Perra", "Zevini", "Sacchi", "Scrocca", "Calderino", "Venditti"],
   "appia-usato": ["Amaricci", "Miscioscia", "Nobili"],
   "barberini": ["Limardi", "Macrí", "Nardulli", "Sbizzera", "Borgia"],
+};
+
+// Valor que se guarda en pericia.vendedor cuando se marca el checkbox
+// "Non si conosce il venditore" (issue de vendedor desconocido, ej. datos
+// que llegan de Wincar sin esa información). No es un vendedor real, así
+// que se usa esta constante en vez de repetir el string a mano en cada
+// lugar que lo necesita.
+const VENDEDOR_DESCONOCIDO = "Sconosciuto";
+
+// Genera un identificador único para cada pericia. Hace falta porque
+// Elimina/Edita necesitan poder señalar SIEMPRE a la pericia correcta,
+// sin importar en qué orden se esté mostrando la tabla (ver
+// ordenarPorFechaDesc más abajo: antes de esto, Elimina/Edita usaban la
+// posición en el array que se estaba mostrando, que deja de coincidir
+// con la posición real en localStorage en cuanto se filtra, busca u
+// ordena la tabla).
+const generarId = function () {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+};
+
+// Las pericias guardadas antes de agregar el campo "id" no lo tienen.
+// Esta función corre una sola vez al arrancar la página y les asigna uno
+// a las que les falte, para que Elimina/Edita también funcionen con
+// datos viejos.
+const migrarIdsSiHacenFalta = function () {
+  const guardado = localStorage.getItem("pericias");
+  if (guardado === null) return;
+
+  const pericias = JSON.parse(guardado);
+  let faltaAlguno = false;
+
+  for (const pericia of pericias) {
+    if (pericia.id === undefined) {
+      pericia.id = generarId();
+      faltaAlguno = true;
+    }
+  }
+
+  if (faltaAlguno) {
+    localStorage.setItem("pericias", JSON.stringify(pericias));
+  }
+};
+
+// Ordena por fecha, de la más reciente a la más antigua (issue: una
+// pericia de días atrás cargada hoy tiene que aparecer junto a las de
+// ese día, no al final de la tabla por orden de carga). Devuelve un
+// array nuevo: nunca tocamos el array original ni su orden en
+// localStorage, solo el orden en que se pinta.
+const ordenarPorFechaDesc = function (pericias) {
+  return pericias.slice().sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
 };
 
 
@@ -40,12 +90,17 @@ const calcularTotalMes = function (pericias) {
 
 // Agrupa las pericias por vendedor y cuenta cuántas
 // tiene cada uno. Devuelve un array de pares
-// [nombre, cantidad], ordenado de mayor a menor.
+// [nombre, cantidad], ordenado de mayor a menor. No cuenta las pericias
+// sin vendedor real (demo sin vendedor, o marcadas como "Sconosciuto"):
+// no son datos de desempeño de ningún vendedor, así que no corresponde
+// que aparezcan en el ranking.
 const calcularPericiasPorVendedor = function (pericias) {
   const conteo = {};
 
   for (const pericia of pericias) {
     const nombreVendedor = pericia.vendedor;
+
+    if (!nombreVendedor || nombreVendedor === VENDEDOR_DESCONOCIDO) continue;
 
     if (conteo[nombreVendedor] === undefined) {
       conteo[nombreVendedor] = 1; // primera vez que aparece este vendedor
@@ -63,6 +118,28 @@ const calcularPericiasPorVendedor = function (pericias) {
   });
 
   return conteoComoArrayOrdenado;
+};
+
+// Busca, entre todas las pericias guardadas, la más reciente (por
+// fecha) que tenga esta targa. Se usa para autocompletar el formulario
+// cuando se carga una segunda pericia del mismo auto (issue #46).
+// Devuelve undefined si no hay ninguna coincidencia.
+const buscarUltimaPericiaPorTarga = function (targa, pericias) {
+  const coincidencias = pericias.filter(function (pericia) {
+    return pericia.targa === targa;
+  });
+
+  if (coincidencias.length === 0) {
+    return undefined;
+  }
+
+  // ordena por fecha descendente (las fechas "YYYY-MM-DD" comparan bien
+  // como strings) y toma la primera: la más reciente
+  const ordenadasPorFechaDesc = coincidencias.slice().sort(function (a, b) {
+    return (b.fecha || "").localeCompare(a.fecha || "");
+  });
+
+  return ordenadasPorFechaDesc[0];
 };
 
 // Calcula qué porcentaje de patentes distintas aparece
@@ -257,13 +334,19 @@ const renderizarTabla = function (periciasARenderizar) {
     pericias = periciasARenderizar;
   }
 
+  // se ordena siempre acá, así cualquier llamada a renderizarTabla
+  // (vista por defecto, filtros, búsqueda por targa) muestra las
+  // pericias agrupadas por fecha sin tener que acordarse de ordenar
+  // antes de llamarla
+  pericias = ordenarPorFechaDesc(pericias);
+
   // guarda lo que está actualmente visible, para que
   // el botón de exportar CSV sepa qué exportar
   periciasVisibles = pericias;
 
   let contenidoTabla = "";
 
-  for (const [index, pericia] of pericias.entries()) {
+  for (const pericia of pericias) {
     contenidoTabla += `
       <tr>
         <td>${pericia.targa}</td>
@@ -274,8 +357,8 @@ const renderizarTabla = function (periciasARenderizar) {
         <td>${pericia.tipo}</td>
         <td>${escaparHTML(pericia.notas)}</td>
         <td>
-          <button class="btn-eliminar" data-index="${index}">Elimina</button>
-          <button class="btn-editar" data-index="${index}">Edita</button>
+          <button class="btn-eliminar" data-id="${pericia.id}">Elimina</button>
+          <button class="btn-editar" data-id="${pericia.id}">Edita</button>
         </td>
       </tr>
       `;
@@ -498,12 +581,13 @@ const buscadorTarga = document.getElementById("buscador-targa");
 const inputTarga = document.getElementById("targa");
 const inputConcesionaria = document.getElementById("concesionaria");
 const inputVendedor = document.getElementById("vendedor");
+const inputVendedorDesconocido = document.getElementById("vendedor-desconocido");
 const aplicaFiltro = document.getElementById("btn-aplicar-filtros");
 const limpiarFiltro = document.getElementById("btn-limpiar-filtros");
 const btnExportar = document.getElementById("btn-exportar-csv");
 const btnCerrarMes = document.getElementById("btn-cerrar-mes");
 
-let indiceEditando = null; // null = carga nueva; un número = editando esa posición del array
+let idEditando = null; // null = carga nueva; un id = editando esa pericia existente
 let periciasVisibles = []; // lo que está actualmente pintado en la tabla (todo o filtrado)
 
 
@@ -547,6 +631,50 @@ const poblarVendedoresDeSede = function (sede) {
 inputConcesionaria.addEventListener("change", (e) => {
   poblarVendedoresDeSede(e.target.value);
 });
+
+// Las pericias de tipo "demo" no tienen vendedor asociado (no se puede
+// cargar una demo si se obliga a elegir uno). El resto de los tipos sí
+// lo requieren. Como el campo requerido depende de un radio button
+// distinto, alternamos el atributo "required" del select cada vez que
+// cambia el tipo elegido, en vez de tocar la validación genérica del
+// submit (que sigue siendo la misma para todos los campos).
+// OJO: "disabled" por sí solo NO alcanza para saltarse la validación
+// (comprobado: un <select required disabled> sigue dando
+// validity.valid === false en Chrome). Por eso el required hay que
+// desactivarlo a mano acá también, igual que con "demo".
+const actualizarRequeridoVendedor = function () {
+  const tipoSeleccionado = formulario.querySelector('input[name="tipo"]:checked');
+  const esDemo = tipoSeleccionado !== null && tipoSeleccionado.value === "demo";
+  inputVendedor.required = !esDemo && !inputVendedorDesconocido.checked;
+};
+
+formulario.addEventListener("change", (e) => {
+  if (e.target.name === "tipo") {
+    actualizarRequeridoVendedor();
+  }
+});
+
+// A veces el dato del vendedor no se puede recuperar (ej. una pericia
+// que llega de Wincar sin esa información, cargada días después, cuando
+// ya se perdió el dato). El checkbox "Non si conosce il venditore"
+// deshabilita el select (para que no se pueda tocar mientras está
+// marcado) y recalcula el required — las dos cosas hacen falta, ver nota
+// arriba.
+inputVendedorDesconocido.addEventListener("change", (e) => {
+  inputVendedor.disabled = e.target.checked;
+  if (e.target.checked) {
+    inputVendedor.value = ""; // no dejamos una selección vieja "colgada" mientras está deshabilitado
+  }
+  actualizarRequeridoVendedor();
+});
+
+// Vuelve el checkbox y el select de vendedor a su estado por defecto
+// (desmarcado, habilitado). Se usa en los mismos momentos en que el
+// formulario "arranca de cero" (ver precargarFechaHoy).
+const restablecerVendedorDesconocido = function () {
+  inputVendedorDesconocido.checked = false;
+  inputVendedor.disabled = false;
+};
 
 // Población del filtro "Venditore" (panel de filtros): todos los
 // vendedores de todas las sedes juntos, sin duplicados y ordenados
@@ -607,6 +735,55 @@ carruselAnterior.addEventListener("click", () => irAGrafico(indiceGraficoActual 
 carruselSiguiente.addEventListener("click", () => irAGrafico(indiceGraficoActual + 1));
 
 irAGrafico(0); // estado inicial
+
+
+// ============================================
+// FECHA POR DEFECTO
+// El campo "Data" arranca con el día de hoy cargado
+// (issue #46), pero sigue siendo editable a mano para
+// cargar pericias atrasadas.
+// ============================================
+
+// Formatea un objeto Date como "YYYY-MM-DD": el formato que usa
+// tanto el input type="date" como pericia.fecha en localStorage.
+const formatearFechaISO = function (fecha) {
+  const año = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${año}-${mes}-${dia}`;
+};
+
+const precargarFechaHoy = function () {
+  document.getElementById("fecha").value = formatearFechaISO(new Date());
+  // aprovechamos que esta función corre en todo momento en que el
+  // formulario "arranca de cero" (carga inicial, después de guardar,
+  // después de "Pulisci") para limpiar también el aviso de autocompletado
+  document.getElementById("targa-autocompletado").textContent = "";
+};
+
+precargarFechaHoy(); // estado inicial, apenas carga la página
+actualizarRequeridoVendedor(); // ningún tipo marcado todavía: vendedor vuelve a ser obligatorio por defecto
+restablecerVendedorDesconocido(); // checkbox desmarcado, select habilitado
+
+// El botón "Pulisci" (type="reset") dispara el reset nativo del
+// formulario, que limpia "Data" también. El evento "reset" se dispara
+// ANTES de que el navegador limpie los campos (es la misma lógica que
+// "submit"), así que hay que esperar al siguiente tick (setTimeout 0)
+// para volver a poner la fecha de hoy después de que se vacíe.
+// También hay que recalcular si el vendedor vuelve a ser obligatorio:
+// reset() destilda los radio buttons y el checkbox, pero no toca por sí
+// solo el atributo "required" ni el "disabled" que seteamos a mano.
+formulario.addEventListener("reset", () => {
+  setTimeout(() => {
+    precargarFechaHoy();
+    actualizarRequeridoVendedor();
+    restablecerVendedorDesconocido();
+  }, 0);
+});
+
+// antes del primer pintado: les asigna id a las pericias viejas que no
+// lo tengan (ver migrarIdsSiHacenFalta más arriba)
+migrarIdsSiHacenFalta();
 
 // primer pintado, apenas carga la página
 mostrarVistaPorDefecto();
@@ -733,9 +910,62 @@ aplicaFiltro.addEventListener("click", (e) => {
   renderizarTabla(periciasFiltradas);
 });
 
-// Fuerza mayúsculas mientras se escribe la targa en el formulario.
+// Fuerza mayúsculas mientras se escribe la targa en el formulario, y
+// limpia el aviso de autocompletado (si lo había) porque al seguir
+// escribiendo la targa ya cambió y ese aviso queda desactualizado.
 inputTarga.addEventListener("input", (e) => {
   e.target.value = e.target.value.toUpperCase();
+  document.getElementById("targa-autocompletado").textContent = "";
+});
+
+// Al salir del campo targa (no mientras se escribe), busca si esa targa
+// ya tiene una pericia previa y autocompleta marca/sede/vendedor con los
+// datos de la más reciente. El tipo NUNCA se autocompleta a propósito:
+// suele cambiar entre la primera carga y la segunda (issue #46).
+inputTarga.addEventListener("blur", (e) => {
+  const targa = e.target.value;
+  const spanAutocompletado = document.getElementById("targa-autocompletado");
+  spanAutocompletado.textContent = "";
+
+  if (!targa) return;
+
+  // si se está editando una pericia existente, los campos ya vienen
+  // de esa pericia: no tiene sentido pisarlos con otra búsqueda
+  if (idEditando !== null) return;
+
+  let pericias;
+  const guardado = localStorage.getItem("pericias");
+  if (guardado === null) {
+    pericias = [];
+  } else {
+    pericias = JSON.parse(guardado);
+  }
+
+  const ultimaPericia = buscarUltimaPericiaPorTarga(targa, pericias);
+  if (!ultimaPericia) return;
+
+  document.getElementById("brand").value = ultimaPericia.brand;
+  document.getElementById("concesionaria").value = ultimaPericia.concesionaria;
+  poblarVendedoresDeSede(ultimaPericia.concesionaria); // repuebla antes de asignar, si no el value no pega
+
+  if (ultimaPericia.vendedor === VENDEDOR_DESCONOCIDO) {
+    // la pericia anterior tampoco tenía vendedor: reflejamos lo mismo
+    // en vez de intentar seleccionar un "Sconosciuto" que no es una
+    // opción real del <select>
+    inputVendedorDesconocido.checked = true;
+    inputVendedor.disabled = true;
+  } else {
+    // por si quedó marcado de un autocompletado anterior (ej. el usuario
+    // cambió de targa después de que se autocompletara una sin vendedor)
+    inputVendedorDesconocido.checked = false;
+    inputVendedor.disabled = false;
+    document.getElementById("vendedor").value = ultimaPericia.vendedor;
+  }
+  // tanto .checked como el tipo pueden haber cambiado el required del
+  // vendedor; marcar el checkbox a mano no dispara "change" por su cuenta
+  actualizarRequeridoVendedor();
+
+  spanAutocompletado.textContent = "Trovata una perizia precedente con questa targa: dati precompilati.";
 });
 
 // Búsqueda rápida por targa, filtrando en vivo mientras se escribe.
@@ -770,7 +1000,7 @@ tbody.addEventListener("click", (e) => {
       return;
     }
 
-    const index = Number(e.target.dataset.index);
+    const id = e.target.dataset.id;
 
     let pericias;
     const guardado = localStorage.getItem("pericias");
@@ -780,14 +1010,20 @@ tbody.addEventListener("click", (e) => {
       pericias = JSON.parse(guardado);
     }
 
-    pericias.splice(index, 1); // saca 1 elemento en la posición "index"
+    // se busca por id (no por posición): la tabla puede estar mostrando
+    // las pericias ordenadas por fecha o filtradas, así que la posición
+    // en pantalla no tiene por qué coincidir con la posición real acá
+    const indexReal = pericias.findIndex((p) => p.id === id);
+    if (indexReal === -1) return; // por si ya no existe (ej. doble click)
+
+    pericias.splice(indexReal, 1);
     localStorage.setItem("pericias", JSON.stringify(pericias));
     mostrarVistaPorDefecto();
   }
 
   // --- Editar ---
   if (e.target.classList.contains("btn-editar")) {
-    const index = Number(e.target.dataset.index);
+    const id = e.target.dataset.id;
 
     let pericias;
     const guardado = localStorage.getItem("pericias");
@@ -797,20 +1033,34 @@ tbody.addEventListener("click", (e) => {
       pericias = JSON.parse(guardado);
     }
 
-    const pericia = pericias[index];
+    const pericia = pericias.find((p) => p.id === id);
+    if (pericia === undefined) return; // por si ya no existe
 
     // carga los datos de esa pericia de vuelta en el formulario
     document.getElementById("targa").value = pericia.targa;
     document.getElementById("brand").value = pericia.brand;
     document.getElementById("concesionaria").value = pericia.concesionaria;
     poblarVendedoresDeSede(pericia.concesionaria); // repuebla antes de asignar, si no el value no pega
-    document.getElementById("vendedor").value = pericia.vendedor;
+
+    if (pericia.vendedor === VENDEDOR_DESCONOCIDO) {
+      inputVendedorDesconocido.checked = true;
+      inputVendedor.disabled = true;
+    } else {
+      inputVendedorDesconocido.checked = false;
+      inputVendedor.disabled = false;
+      document.getElementById("vendedor").value = pericia.vendedor;
+    }
+
     document.getElementById("fecha").value = pericia.fecha;
     document.getElementById("notas").value = pericia.notas;
     formulario.querySelector(`input[name="tipo"][value="${pericia.tipo}"]`).checked = true;
+    // marcar el radio a mano (.checked = true) no dispara "change", así
+    // que hay que recalcular el required del vendedor explícitamente
+    // (si no, editar una demo vieja pediría un vendedor que no tiene)
+    actualizarRequeridoVendedor();
 
-    // marca que el próximo submit debe actualizar esta posición, no crear una nueva
-    indiceEditando = index;
+    // marca que el próximo submit debe actualizar esta pericia, no crear una nueva
+    idEditando = id;
   }
 });
 
@@ -819,7 +1069,7 @@ tbody.addEventListener("click", (e) => {
 // GUARDAR PERICIA (submit del formulario)
 // Valida cada campo con la Constraint Validation API,
 // y si todo es válido, crea o actualiza la pericia
-// en localStorage según indiceEditando.
+// en localStorage según idEditando.
 // ============================================
 formulario.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -831,6 +1081,7 @@ formulario.addEventListener("submit", (e) => {
   for (const campo of formulario.elements) {
     if (campo.tagName === "BUTTON") continue;
     if (campo.type === "radio") continue;
+    if (campo.type === "checkbox") continue; // "vendedor-desconocido": nunca obligatorio, no tiene span de error
     if (campo.id === "notas") continue; // opcional, nunca falla
     if (campo.tagName === "FIELDSET") continue; // no es un campo de datos
 
@@ -867,7 +1118,11 @@ formulario.addEventListener("submit", (e) => {
     const targa = document.getElementById("targa").value;
     const brand = document.getElementById("brand").value;
     const concesionaria = document.getElementById("concesionaria").value;
-    const vendedor = document.getElementById("vendedor").value;
+    // si está marcado "Non si conosce il venditore", el select está
+    // deshabilitado (su valor no sirve); guardamos el valor fijo en su lugar
+    const vendedor = inputVendedorDesconocido.checked
+      ? VENDEDOR_DESCONOCIDO
+      : document.getElementById("vendedor").value;
     const fecha = document.getElementById("fecha").value;
     const notas = document.getElementById("notas").value;
     const tipo = algunTipoMarcado.value;
@@ -890,10 +1145,15 @@ formulario.addEventListener("submit", (e) => {
       pericias = JSON.parse(guardado);
     }
 
-    if (indiceEditando === null) {
-      pericias.push(pericia); // carga nueva
+    if (idEditando === null) {
+      pericia.id = generarId(); // carga nueva
+      pericias.push(pericia);
     } else {
-      pericias[indiceEditando] = pericia; // actualiza la existente
+      pericia.id = idEditando; // conserva el id original, no se reasigna al editar
+      const indexReal = pericias.findIndex((p) => p.id === idEditando);
+      if (indexReal !== -1) {
+        pericias[indexReal] = pericia;
+      }
     }
 
     localStorage.setItem("pericias", JSON.stringify(pericias));
@@ -903,6 +1163,9 @@ formulario.addEventListener("submit", (e) => {
 
     mostrarVistaPorDefecto();
     formulario.reset();
-    indiceEditando = null; // vuelve a modo "carga nueva"
+    precargarFechaHoy(); // formulario.reset() vacía "Data"; la volvemos a poner en el día de hoy
+    actualizarRequeridoVendedor(); // reset() destilda el tipo, pero no toca el "required" que seteamos a mano
+    restablecerVendedorDesconocido(); // reset() destilda el checkbox, pero no reactiva el select deshabilitado
+    idEditando = null; // vuelve a modo "carga nueva"
   }
 });

@@ -51,6 +51,7 @@
                     <label for="targa">Targa</label>
                     <input type="text" name="targa" id="targa" required pattern="[A-Z]{2}[0-9]{3}[A-Z]{2}" placeholder="AA123BB">
                     <span id="targa-error"></span>
+                    <span id="targa-autocompletado" class="mensaje-autocompletado"></span>
                 </div>
                 <div class="campo">
                     <label for="brand">Marca</label>
@@ -76,6 +77,7 @@
                         <option value="lexus">Lexus</option>
                         <option value="mazda">Mazda</option>
                         <option value="mercedes-benz">Mercedes benz</option>
+                        <option value="mg">MG</option>
                         <option value="mini">MINI</option>
                         <option value="mitsubishi">Mitsubishi</option>
                         <option value="nissan">Nissan</option>
@@ -115,6 +117,10 @@
                         <option value="">Prima seleziona una sede</option>
                     </select>
                     <span id="vendedor-error"></span>
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="vendedor-desconocido">
+                        Non si conosce il venditore
+                    </label>
                 </div>
                 <div class="campo">
                     <fieldset>
